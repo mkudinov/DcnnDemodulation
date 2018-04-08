@@ -60,36 +60,3 @@ class SignalGeneratorASCII(object):
         for ascii_code in self._message:
             for bit_frame, bit in self._generate_fsk_byte_frames(ascii_code):
                 yield bit, bit_frame
-
-
-class AwgnParameterGenerator(object):
-    """
-    Helper class for adding noise with target SNR values
-    """
-    def __init__(self, snr_values):
-        """
-        :param snr_values: target SNR values for noise generation
-        :type snr_values: list of float32
-        """
-        self.snr_values = snr_values
-
-    def random_noise_parameter(self):
-        """
-        Get SNR for the next noisy signal frame
-        :return: SNR value
-        """
-        return np.random.choice(self.snr_values, 1)[0]
-
-
-class TfSignalSource(object):
-    """
-    Class is intended to transfer signal data in the form of Numpy arrays to tesorflow
-    """
-    def __init__(self, signal_generator, noise_generator):
-        """
-        :param signal_generator: signal generator
-        :type signal_generator: SignalGeneratorASCII
-        :param noise_generator: object for white noise generation
-        :type noise_generator: AwgnGenerator
-        """
-        self._generator = signal_generator
