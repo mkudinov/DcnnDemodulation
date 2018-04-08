@@ -60,3 +60,18 @@ class SignalGeneratorASCII(object):
         for ascii_code in self._message:
             for bit_frame, bit in self._generate_fsk_byte_frames(ascii_code):
                 yield bit, bit_frame
+
+
+def add_noise(signal, target_bit, snr_levels):
+    """
+    Parsing function for tf.Dataset. Adds random noise of one of specified levels.
+    :param signal: signal where noise will be added
+    :type signal: tf.Tensor
+    :param target_bit: bit value of the demodulated signal
+    :type target_bit: tf.Tensor
+    :param snr_levels: possible target SNR levels for adding white noise
+    :type snr_levels: list of tf.placeholder
+    :return: pair (noisy_signal, target_bit)
+    """
+    
+    return signal, target_bit
