@@ -12,7 +12,7 @@ class SignalGeneratorASCII(object):
        see "Demodulation of Faded Wireless Signals using Deep Convolutional Neural Networks"
        http://sce2.umkc.edu/csee/beardc/DCNN%20Demodulation%20UMKC%20CCWC18.pdf
     """
-    def __init__(self, path_to_text, frequency_mark=984.0, frequency_space=966.0, bit_rate=2, sample_rate=10 ** 6):
+    def __init__(self, path_to_text, frequency_mark=984.0, frequency_space=966.0, bit_rate=10**4, sample_rate=10 ** 6):
         """
         :param path_to_text: path to the text file used for signal generation
         :type path_to_text: string
@@ -29,11 +29,11 @@ class SignalGeneratorASCII(object):
         self._frequency_space = frequency_space
         self._bit_rate = bit_rate
         self._sample_rate = sample_rate
-        bit_time = np.linspace(0.0, 1.0 / self._bit_rate, int(self._sample_rate / self._bit_rate))
+        self._samples_per_bit = self._sample_rate / self._bit_rate
+        bit_time = np.linspace(0.0, 1.0 / self._bit_rate, int(self._samples_per_bit))
         self._frequencies = [np.sin(2 * np.pi * self._frequency_space * bit_time),
                              np.sin(2 * np.pi * self._frequency_mark * bit_time)]
         self._message = self._load_text(path_to_text)
-        self._samples_per_bit = self._bit_rate / self._sample_rate  # WARNING: MAGIC NUMBER FROM PAPER
 
     def _load_text(self, path_to_text):
         full_message = []
@@ -62,7 +62,7 @@ class SignalGeneratorASCII(object):
                 yield bit, bit_frame
 
 
-def add_noise(signal, target_bit, snr):
+def add_noise_and_fft(signal, target_bit, snr_level):
     """
     Parsing function for tf.Dataset. Adds random noise of one of specified levels.
     :param signal: signal where noise will be added
@@ -73,7 +73,11 @@ def add_noise(signal, target_bit, snr):
     :type snr_level: tf.placeholder scalar
     :return: pair (noisy_signal, target_bit)
     """
-    std = tf.pow(10, -snr/10)
+    std = tf.pow(10, -snr_level/10)
     signal += tf.random_normal(shape=tf.shape(signal), mean=0.0, stddev=std, dtype=tf.float32)
-
-    return signal, target_bit
+    signal = tf.cast(signal, tf.complex64)
+    fft = tf.fft(signal)
+    real_fft = tf.expand_dims(tf.real(fft), 0)
+    imag_fft = tf.expand_dims(tf.imag(fft), 0)
+    features = tf.concat([real_fft, imag_fft], axis=0)
+    return features, target_bit
