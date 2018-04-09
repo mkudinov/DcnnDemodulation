@@ -1,3 +1,5 @@
+import tensorflow as tf
+
 class DCNN:
     def __init__(self):
         self.input = tf.placeholder(tf.float32, [None, 2, 100, 1])

@@ -1,5 +1,5 @@
 import numpy as np
-
+import tensorflow as tf
 
 def dec2bin(num, n_bits):
     return ("{0:0>%db}" % n_bits).format(num)
@@ -62,16 +62,18 @@ class SignalGeneratorASCII(object):
                 yield bit, bit_frame
 
 
-def add_noise(signal, target_bit, snr_levels):
+def add_noise(signal, target_bit, snr):
     """
     Parsing function for tf.Dataset. Adds random noise of one of specified levels.
     :param signal: signal where noise will be added
     :type signal: tf.Tensor
     :param target_bit: bit value of the demodulated signal
     :type target_bit: tf.Tensor
-    :param snr_levels: possible target SNR levels for adding white noise
-    :type snr_levels: list of tf.placeholder
+    :param snr_level: target SNR levels for adding white noise
+    :type snr_level: tf.placeholder scalar
     :return: pair (noisy_signal, target_bit)
     """
-    
+    std = tf.pow(10, -snr/10)
+    signal += tf.random_normal(shape=tf.shape(signal), mean=0.0, stddev=std, dtype=tf.float32)
+
     return signal, target_bit
