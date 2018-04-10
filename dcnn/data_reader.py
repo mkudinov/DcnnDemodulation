@@ -39,12 +39,8 @@ class AsciiSignalSource(object):
     def _load_text(self, path_to_text):
         full_message = []
         for line in open(path_to_text):
-            # 1000 msec pause before signal start
-            full_message += [0] * self._bit_rate
             for letter in line.strip():
                 full_message.append(ord(letter))
-            # 1000 msec pause after signal start
-            full_message += [0] * self._bit_rate
         return full_message
 
     def _generate_fsk_byte_frames(self, number):
@@ -64,7 +60,9 @@ class AsciiSignalSource(object):
             frame_sequence, bit_sequence = self._generate_fsk_byte_frames(ascii_code)
             for bit_frame, bit in zip(frame_sequence, bit_sequence):
                 features.append(bit_frame)
-                labels.append(bit)
+                bit_label = np.zeros(2)
+                bit_label[bit] = 1
+                labels.append(bit_label)
         return np.array(features, dtype=np.float32), np.array(labels, np.int32)
 
 

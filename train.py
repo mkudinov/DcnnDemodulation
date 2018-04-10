@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from dcnn.data_reader import AsciiSignalSource, add_noise_and_fft
+from dcnn.model import DCNN
 import os
 
 flags = tf.flags
@@ -23,6 +24,14 @@ if __name__ == '__main__':
     training_set = training_set.shuffle(10000, reshuffle_each_iteration=True).batch(128).repeat()
     iterator = training_set.make_initializable_iterator()
     next_element = iterator.get_next()
+    demodulation_cnn = DCNN(next_element[0], next_element[1])
     with tf.Session() as sess:
-        sess.run(iterator.initializer, feed_dict={feature_placeholder: train_features, label_placeholder: train_labels})
-        sess.run(next_element)
+        for epoch in range(1):
+            print("Epoch: %s" % epoch)
+            sess.run(iterator.initializer,
+                     feed_dict={feature_placeholder: train_features, label_placeholder: train_labels})
+            while True:
+                try:
+                    sess.run(next_element)
+                except tf.errors.OutOfRangeError:
+                    break
