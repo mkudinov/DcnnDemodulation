@@ -1,11 +1,12 @@
 import numpy as np
 import tensorflow as tf
 
+
 def dec2bin(num, n_bits):
     return ("{0:0>%db}" % n_bits).format(num)
 
 
-class SignalGeneratorASCII(object):
+class AsciiSignalSource(object):
     """Class for constructing BFSK signals from ASCII symbols of a given text.
        Each bit frame is randomly subsampled based on sample rate and separation frequency
 
@@ -25,8 +26,8 @@ class SignalGeneratorASCII(object):
         :param sample_rate: sample rate
         :type sample_rate: int
         """
-        self._frequency_mark = frequency_mark
-        self._frequency_space = frequency_space
+        self._frequency_mark = np.float32(frequency_mark)
+        self._frequency_space = np.float32(frequency_space)
         self._bit_rate = bit_rate
         self._sample_rate = sample_rate
         self._samples_per_bit = self._sample_rate / self._bit_rate
@@ -41,25 +42,30 @@ class SignalGeneratorASCII(object):
             # 1000 msec pause before signal start
             full_message += [0] * self._bit_rate
             for letter in line.strip():
-                full_message.append(ord(letter))
+                full_message.append(dec2bin(ord(letter), 8))
             # 1000 msec pause after signal start
             full_message += [0] * self._bit_rate
         return full_message
 
     def _generate_fsk_byte_frames(self, number):
         binary_form = dec2bin(number, 16)
-        signal_fsk = []
+        fsk_frame_sequence = []
         bit_sequence = []
         for digit in binary_form:
             digit = int(digit)
             bit_sequence.append(digit)
-            signal_fsk.append(self._frequencies[digit])
-        return signal_fsk, bit_sequence
+            fsk_frame_sequence.append(self._frequencies[digit])
+        return fsk_frame_sequence, bit_sequence
 
-    def __next__(self):
+    def generate_dataset(self):
+        features = []
+        labels = []
         for ascii_code in self._message:
-            for bit_frame, bit in self._generate_fsk_byte_frames(ascii_code):
-                yield bit, bit_frame
+            frame_sequence, bit_sequence = self._generate_fsk_byte_frames(ascii_code)
+            for bit_frame, bit in zip(frame_sequence, bit_sequence):
+                features.append(bit_frame)
+                labels.append(bit)
+        return np.array(features, dtype=np.float32), np.array(labels, np.int32)
 
 
 def add_noise_and_fft(signal, target_bit, snr_level):
