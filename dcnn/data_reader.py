@@ -42,13 +42,13 @@ class AsciiSignalSource(object):
             # 1000 msec pause before signal start
             full_message += [0] * self._bit_rate
             for letter in line.strip():
-                full_message.append(dec2bin(ord(letter), 8))
+                full_message.append(ord(letter))
             # 1000 msec pause after signal start
             full_message += [0] * self._bit_rate
         return full_message
 
     def _generate_fsk_byte_frames(self, number):
-        binary_form = dec2bin(number, 16)
+        binary_form = dec2bin(number, 8)
         fsk_frame_sequence = []
         bit_sequence = []
         for digit in binary_form:
@@ -79,7 +79,7 @@ def add_noise_and_fft(signal, target_bit, snr_level):
     :type snr_level: tf.placeholder scalar
     :return: pair (noisy_signal, target_bit)
     """
-    std = tf.pow(10, -snr_level/10)
+    std = tf.pow(10.0, -snr_level/10)
     signal += tf.random_normal(shape=tf.shape(signal), mean=0.0, stddev=std, dtype=tf.float32)
     signal = tf.cast(signal, tf.complex64)
     fft = tf.fft(signal)

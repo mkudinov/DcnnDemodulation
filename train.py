@@ -22,8 +22,7 @@ if __name__ == '__main__':
         training_set.concatenate(clean_training_set.map(lambda x, y: add_noise_and_fft(x, y, snr_level)))
     training_set = training_set.shuffle(10000, reshuffle_each_iteration=True).batch(128).repeat()
     iterator = training_set.make_initializable_iterator()
-    next_element = iterator.next_element()
+    next_element = iterator.get_next()
     with tf.Session() as sess:
         sess.run(iterator.initializer, feed_dict={feature_placeholder: train_features, label_placeholder: train_labels})
-
-
+        sess.run(next_element)
