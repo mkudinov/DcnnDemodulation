@@ -8,6 +8,8 @@ flags = tf.flags
 flags.DEFINE_string('data_dir', 'data',
                     'data directory. Should contain train_text..txt, valid_text.txt, test_text.txt')
 flags.DEFINE_string('train_dir', 'cv', 'training directory (models and summaries are saved there periodically)')
+flags.DEFINE_string('summaries_dir', 'summaries',
+                    'directory to store tensorboard summaries')
 flags.DEFINE_string('load_model', None,
                     '(optional) filename of the model to load. Useful for re-starting training from a checkpoint')
 FLAGS = flags.FLAGS
@@ -25,13 +27,19 @@ if __name__ == '__main__':
     iterator = training_set.make_initializable_iterator()
     next_element = iterator.get_next()
     demodulation_cnn = DCNN(next_element[0], next_element[1])
+    merged = tf.summary.merge_all()
     with tf.Session() as sess:
+        tf.initialize_all_variables().run()
+        train_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/train',
+                                             sess.graph)
+        test_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/test')
         for epoch in range(1):
             print("Epoch: %s" % epoch)
             sess.run(iterator.initializer,
                      feed_dict={feature_placeholder: train_features, label_placeholder: train_labels})
             while True:
                 try:
-                    sess.run(next_element)
+                    sess.run(demodulation_cnn.train_op)
+                    print("Эщкере")
                 except tf.errors.OutOfRangeError:
                     break
