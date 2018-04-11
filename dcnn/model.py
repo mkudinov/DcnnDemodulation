@@ -34,10 +34,9 @@ class DCNN:
     @staticmethod
     def convlayers(input):
         # zero-mean input
-        #with tf.name_scope('preprocess'):
-        #    normalized_input = input - tf.reduce_mean(input, 2)
-        #    normalized_input = normalized_input / tf.reduce_max(input, 2)
-        normalized_input = input
+        with tf.name_scope('preprocess'):
+           normalized_input = input - tf.expand_dims(tf.reduce_mean(input, 2), 3)
+           normalized_input = normalized_input / tf.expand_dims(tf.reduce_max(input, 2), 3)
 
         # conv1
         with tf.name_scope('conv1') as scope:
