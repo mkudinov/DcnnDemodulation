@@ -21,7 +21,7 @@ class DCNN:
         true_output = label_placeholder
         convolution_output = self.convlayers(self.input)
         self.logits = self.fc_layers(convolution_output)
-        self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=true_output, logits=self.logits)
+        self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=true_output, logits=self.logits))
         self.train_op = tf.train.AdamOptimizer(1e-4).minimize(self.loss)
         tf.summary.scalar('cross_entropy', self.loss)
         with tf.name_scope('accuracy'):

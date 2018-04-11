@@ -30,6 +30,7 @@ if __name__ == '__main__':
     merged = tf.summary.merge_all()
     with tf.Session() as sess:
         tf.initialize_all_variables().run()
+        tf.initialize_all_variables().run()
         train_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/train',
                                              sess.graph)
         test_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/test')
@@ -39,7 +40,8 @@ if __name__ == '__main__':
                      feed_dict={feature_placeholder: train_features, label_placeholder: train_labels})
             while True:
                 try:
-                    sess.run(demodulation_cnn.train_op)
-                    print("Эщкере")
+                    _, summary_value = sess.run([demodulation_cnn.train_op, merged])
+                    train_writer.add_summary(summary_value)
                 except tf.errors.OutOfRangeError:
                     break
+        print("Finished!")
