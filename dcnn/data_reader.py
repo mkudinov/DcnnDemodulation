@@ -13,7 +13,7 @@ class AsciiSignalSource(object):
        see "Demodulation of Faded Wireless Signals using Deep Convolutional Neural Networks"
        http://sce2.umkc.edu/csee/beardc/DCNN%20Demodulation%20UMKC%20CCWC18.pdf
     """
-    def __init__(self, path_to_text, frequency_mark=984.0, frequency_space=966.0, bit_rate=10**4, sample_rate=10 ** 6):
+    def __init__(self, path_to_text, frequency_mark=75e3, frequency_space=2*75e3, bit_rate=10**4, sample_rate=10 ** 6):
         """
         :param path_to_text: path to the text file used for signal generation
         :type path_to_text: string
