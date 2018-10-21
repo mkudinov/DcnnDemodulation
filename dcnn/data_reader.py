@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import pickle
 
 
 def dec2bin(num, n_bits):
@@ -64,6 +65,22 @@ class AsciiSignalSource(object):
                 bit_label[bit] = 1
                 labels.append(bit_label)
         return np.array(features, dtype=np.float32), np.array(labels, np.int32)
+
+
+class RealDataSource(object):
+    """Class for reading real BFSK signals from CPKL
+    """
+    def __init__(self, source):
+        """
+        ;param source: cpkl-file with signal frames and corresponding labels
+        """
+        with open(source) as input_cpkl:
+            dataset = pickle.load(input_cpkl)
+            self._features = dataset.features
+            self._labels = dataset.labels
+
+    def generate_dataset(self):
+        return np.array(self._features, dtype=np.float32), np.array(self._labels, np.int32)
 
 
 def add_noise_and_fft(signal, target_bit, snr_level):
