@@ -25,8 +25,7 @@ BIT_LEN = int(FS / BR)
 
 if __name__ == '__main__':
     SNR_levels = [None]
-    #train_features, train_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_dataset.cpkl'), exclude=[FLAGS.valid_signal_id, FLAGS.test_signal_id]).generate_dataset()
-    train_features, train_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_dataset.cpkl')).generate_dataset()
+    train_features, train_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_dataset.cpkl'), exclude=[FLAGS.valid_signal_id, FLAGS.test_signal_id]).generate_dataset()
     valid_features, valid_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_dataset.cpkl'), include=[FLAGS.valid_signal_id]).generate_dataset()
     test_features, test_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_dataset.cpkl'), include=[FLAGS.test_signal_id]).generate_dataset()
     training_set = tf.data.Dataset.zip((tf.data.Dataset.from_tensor_slices(train_features), tf.data.Dataset.from_tensor_slices(train_labels))).map(lambda x, y: add_noise_and_fft(x, y, SNR_levels[0])).shuffle(10000, reshuffle_each_iteration=True).batch(32)
