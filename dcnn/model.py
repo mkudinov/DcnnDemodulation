@@ -27,6 +27,7 @@ class DCNN:
         with tf.name_scope('accuracy'):
             with tf.name_scope('correct_prediction'):
                 correct_prediction = tf.equal(tf.argmax(true_output, 1), tf.argmax(self.logits, 1))
+                self.correct_prediction = tf.reduce_sum(tf.cast(correct_prediction, tf.int32))
             with tf.name_scope('accuracy'):
                 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         tf.summary.scalar('accuracy', accuracy)
@@ -48,8 +49,8 @@ class DCNN:
             activation = tf.nn.relu(preactivate, name=scope)
             tf.summary.histogram('pre_activations', preactivate)
             tf.summary.histogram('activations', activation)
-            variable_summaries(kernel)
-            variable_summaries(biases)
+            #variable_summaries(kernel)
+            #variable_summaries(biases)
 
         # conv2
         with tf.name_scope('conv2') as scope:
@@ -61,8 +62,8 @@ class DCNN:
             # tensorboard summary
             tf.summary.histogram('pre_activations', preactivate)
             tf.summary.histogram('activations', activation)
-            variable_summaries(kernel)
-            variable_summaries(biases)
+            #variable_summaries(kernel)
+            #variable_summaries(biases)
         return activation
 
     @staticmethod

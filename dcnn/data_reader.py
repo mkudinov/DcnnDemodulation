@@ -70,20 +70,32 @@ class AsciiSignalSource(object):
 class RealDataSource(object):
     """Class for reading real BFSK signals from CPKL
     """
-    def __init__(self, source):
+    def __init__(self, source, exclude=None, include=None):
         """
         ;param source: cpkl-file with signal frames and corresponding labels
         """
-        with open(source) as input_cpkl:
+        features = []
+        labels = []
+        with open(source, 'rb') as input_cpkl:
             dataset = pickle.load(input_cpkl)
-            self._features = dataset.features
-            self._labels = dataset.labels
+        for i, f_list_and_l_list in enumerate(dataset):
+            f_list = f_list_and_l_list[0]
+            l_list = f_list_and_l_list[1]
+            if include is None or i in include:
+                if exclude is None or i not in exclude:
+                    features.append(np.array(f_list))
+                    labels.append(l_list)
+        self._features = np.concatenate(features)
+        flat_labels = np.concatenate(labels)
+        self._labels = np.zeros([len(flat_labels), 2])
+        for i, bit in enumerate(flat_labels):
+            self._labels[i][bit] = 1
 
     def generate_dataset(self):
-        return np.array(self._features, dtype=np.float32), np.array(self._labels, np.int32)
+        return np.asarray(self._features, dtype=np.float32), np.array(self._labels, np.int32)
 
 
-def add_noise_and_fft(signal, target_bit, snr_level):
+def add_noise_and_fft(signal, target_bit, snr_level=None):
     """
     Parsing function for tf.Dataset. Adds random noise of one of specified levels.
     :param signal: signal where noise will be added
@@ -94,8 +106,9 @@ def add_noise_and_fft(signal, target_bit, snr_level):
     :type snr_level: tf.placeholder scalar
     :return: pair (noisy_signal, target_bit)
     """
-    std = tf.pow(10.0, -snr_level/10)
-    signal += tf.random_normal(shape=tf.shape(signal), mean=0.0, stddev=std, dtype=tf.float32)
+    if snr_level is not None:
+        std = tf.pow(10.0, -snr_level/10)
+        signal += tf.random_normal(shape=tf.shape(signal), mean=0.0, stddev=std, dtype=tf.float32)
     signal = tf.cast(signal, tf.complex64)
     fft = tf.fft(signal)
     real_fft = tf.expand_dims(tf.real(fft), 0)
