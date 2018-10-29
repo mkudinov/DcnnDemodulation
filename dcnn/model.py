@@ -36,32 +36,33 @@ class DCNN:
     def convlayers(input):
         # zero-mean input
         with tf.name_scope('preprocess'):
-           normalized_input = input - tf.expand_dims(tf.reduce_mean(input, 2), 3)
-           normalized_input = normalized_input / tf.expand_dims(tf.reduce_max(input, 2), 3)
+           normalized_input = input
+           #normalized_input = input - tf.expand_dims(tf.reduce_mean(input, 1), 2)
+           #normalized_input = normalized_input / tf.expand_dims(tf.abs(tf.reduce_max(input, 2), 3))
 
         # conv1
         with tf.name_scope('conv1') as scope:
-            kernel = tf.Variable(tf.truncated_normal([1, 10, 1, 2], dtype=tf.float32, stddev=1e-1), name='weights')
-            conv = tf.nn.conv2d(normalized_input, kernel, [1, 1, 1, 1], padding='SAME')
-            biases = tf.Variable(tf.constant(0.0, shape=[2], dtype=tf.float32), trainable=True, name='biases')
+            kernel = tf.Variable(tf.truncated_normal([32, 1, 8], dtype=tf.float32, stddev=1e-1), name='weights')
+            conv = tf.nn.conv1d(normalized_input, kernel, 1, padding='SAME')
+            biases = tf.Variable(tf.constant(0.0, shape=[8], dtype=tf.float32), trainable=True, name='biases')
             preactivate = tf.nn.bias_add(conv, biases)
             # tensorboard summary
             activation = tf.nn.relu(preactivate, name=scope)
-            tf.summary.histogram('pre_activations', preactivate)
-            tf.summary.histogram('activations', activation)
+            #tf.summary.histogram('pre_activations', preactivate)
+            #tf.summary.histogram('activations', activation)
             #variable_summaries(kernel)
             #variable_summaries(biases)
 
         # conv2
         with tf.name_scope('conv2') as scope:
-            kernel = tf.Variable(tf.truncated_normal([1, 10, 2, 4], dtype=tf.float32, stddev=1e-1), name='weights')
-            conv = tf.nn.conv2d(activation, kernel, [1, 1, 1, 1], padding='SAME')
+            kernel = tf.Variable(tf.truncated_normal([8, 8, 4], dtype=tf.float32, stddev=1e-1), name='weights')
+            conv = tf.nn.conv1d(activation, kernel, 1, padding='SAME')
             biases = tf.Variable(tf.constant(0.0, shape=[4], dtype=tf.float32), trainable=True, name='biases')
             preactivate = tf.nn.bias_add(conv, biases)
             activation = tf.nn.relu(preactivate, name=scope)
             # tensorboard summary
-            tf.summary.histogram('pre_activations', preactivate)
-            tf.summary.histogram('activations', activation)
+            #tf.summary.histogram('pre_activations', preactivate)
+            #tf.summary.histogram('activations', activation)
             #variable_summaries(kernel)
             #variable_summaries(biases)
         return activation

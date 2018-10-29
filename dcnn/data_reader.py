@@ -110,8 +110,6 @@ def add_noise_and_fft(signal, target_bit, snr_level=None):
         std = tf.pow(10.0, -snr_level/10)
         signal += tf.random_normal(shape=tf.shape(signal), mean=0.0, stddev=std, dtype=tf.float32)
     signal = tf.cast(signal, tf.complex64)
-    fft = tf.fft(signal)
-    real_fft = tf.expand_dims(tf.real(fft), 0)
-    imag_fft = tf.expand_dims(tf.imag(fft), 0)
-    features = tf.concat([real_fft, imag_fft], axis=0)
+    power_fft = tf.abs(tf.fft(signal)[:signal.shape[0]//2])
+    features = power_fft
     return features, target_bit
