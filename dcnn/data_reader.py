@@ -113,3 +113,20 @@ def add_noise_and_fft(signal, target_bit, snr_level=None):
     power_fft = tf.abs(tf.fft(signal)[:signal.shape[0]//2])
     features = power_fft
     return features, target_bit
+
+def add_noise(features, target_bit, snr_level=None):
+    """
+    Parsing function for tf.Dataset. Adds random noise of one of specified levels.
+    :param signal: signal where noise will be added
+    :type signal: tf.Tensor
+    :param target_bit: bit value of the demodulated signal
+    :type target_bit: tf.Tensor
+    :param snr_level: target SNR levels for adding white noise
+    :type snr_level: tf.placeholder scalar
+    :return: pair (noisy_signal, target_bit)
+    """
+    if snr_level is not None:
+        std = tf.pow(10.0, -snr_level/10)
+        features += tf.square(tf.random_normal(shape=tf.shape(features), mean=0.0, stddev=std, dtype=tf.float32))
+    return features, target_bit
+

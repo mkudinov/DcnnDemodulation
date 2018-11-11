@@ -17,7 +17,7 @@ flags.DEFINE_integer('valid_signal_id', None, 'Id of the signal to be used as a 
 FLAGS = flags.FLAGS 
 
 F1 = 984.0
-F2 = 984.0 + 42
+F2 = 966
 FS = 14648
 BR = 2
 BIT_LEN = int(FS / BR)
@@ -25,11 +25,11 @@ BIT_LEN = int(FS / BR)
 
 if __name__ == '__main__':
     SNR_levels = [None]
-    train_features, train_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_dataset.cpkl'), exclude=[FLAGS.valid_signal_id, FLAGS.test_signal_id]).generate_dataset()
-    valid_features, valid_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_dataset.cpkl'), include=[FLAGS.valid_signal_id]).generate_dataset()
-    test_features, test_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_dataset.cpkl'), include=[FLAGS.test_signal_id]).generate_dataset()
-    training_set = tf.data.Dataset.zip((tf.data.Dataset.from_tensor_slices(train_features), tf.data.Dataset.from_tensor_slices(train_labels))).map(lambda x, y: add_noise_and_fft(x, y, SNR_levels[0])).shuffle(10000, reshuffle_each_iteration=True).batch(32)
-    validation_set = tf.data.Dataset.zip((tf.data.Dataset.from_tensor_slices(valid_features), tf.data.Dataset.from_tensor_slices(valid_labels))).map(lambda x, y: add_noise_and_fft(x, y, SNR_levels[0])).batch(32)
+    train_features, train_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_spec_maxnorm.cpkl'), exclude=[FLAGS.valid_signal_id, FLAGS.test_signal_id]).generate_dataset()
+    valid_features, valid_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_spec_maxnorm.cpkl'), include=[FLAGS.valid_signal_id]).generate_dataset()
+    test_features, test_labels = RealDataSource(os.path.join(FLAGS.data_dir, 'signals_spec_maxnorm.cpkl'), include=[FLAGS.test_signal_id]).generate_dataset()
+    training_set = tf.data.Dataset.zip((tf.data.Dataset.from_tensor_slices(train_features), tf.data.Dataset.from_tensor_slices(train_labels))).add_noise().shuffle(10000, reshuffle_each_iteration=True).batch(32)
+    validation_set = tf.data.Dataset.zip((tf.data.Dataset.from_tensor_slices(valid_features), tf.data.Dataset.from_tensor_slices(valid_labels))).batch(32)
     iterator = tf.data.Iterator.from_structure(training_set.output_types, training_set.output_shapes)
     next_element = iterator.get_next()
     validation_init_op = iterator.make_initializer(validation_set)
