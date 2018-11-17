@@ -76,6 +76,10 @@ class RealDataSource(object):
         """
         features = []
         labels = []
+        if len(include) == 0:
+            include = None
+        if len(exclude) == 0:
+            exclude = None
         with open(source, 'rb') as input_cpkl:
             dataset = pickle.load(input_cpkl)
         for i, f_list_and_l_list in enumerate(dataset):
@@ -127,6 +131,6 @@ def add_noise(features, target_bit, snr_level=None):
     """
     if snr_level is not None:
         std = tf.pow(10.0, -snr_level/10)
-        features += tf.square(tf.random_normal(shape=tf.shape(features), mean=0.0, stddev=std, dtype=tf.float32))
+        features += tf.random_normal(shape=tf.shape(features), mean=0.0, stddev=std, dtype=tf.float32)
     return features, target_bit
 

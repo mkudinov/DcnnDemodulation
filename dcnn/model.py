@@ -97,3 +97,29 @@ class DCNN:
             fc4b = tf.Variable(tf.constant(1.0, shape=[2], dtype=tf.float32), trainable=True, name='biases')
             logits = tf.nn.bias_add(tf.matmul(fc3, fc4w), fc4b)
         return logits
+
+
+class Logreg:
+    def __init__(self, input_placeholder, label_placeholder):
+        self.input = input_placeholder
+        true_output = label_placeholder
+        self.logits = self.fc_layers(self.input)
+        self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=true_output, logits=self.logits))
+        self.train_op = tf.train.AdamOptimizer(1e-4).minimize(self.loss)
+        tf.summary.scalar('cross_entropy', self.loss)
+        with tf.name_scope('accuracy'):
+            with tf.name_scope('correct_prediction'):
+                correct_prediction = tf.equal(tf.argmax(true_output, 1), tf.argmax(self.logits, 1))
+                self.correct_prediction = tf.reduce_sum(tf.cast(correct_prediction, tf.int32))
+            with tf.name_scope('accuracy'):
+                accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        tf.summary.scalar('accuracy', accuracy)
+
+    def fc_layers(self, conv):
+        # fc1
+        with tf.name_scope('fc1'):
+            shape = int(np.prod(conv.get_shape()[1:]))
+            fc1w = tf.Variable(tf.truncated_normal([shape, 2], dtype=tf.float32, stddev=1e-1), name='weights')
+            fc1b = tf.Variable(tf.constant(0.0, shape=[2], dtype=tf.float32), trainable=True, name='biases')
+            logits = tf.nn.bias_add(tf.matmul(conv, fc1w), fc1b)
+        return logits
